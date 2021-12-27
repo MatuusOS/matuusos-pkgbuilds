@@ -1,0 +1,29 @@
+- name: Build Archlinux package
+  # You may pin to the exact commit or the version.
+  # uses: vufa/arch-makepkg-action@cce57f80fef44f772834ead77b66f35a93a4a5c4
+  uses: vufa/arch-makepkg-action@v0.0.2
+  with: matuusos=https://raw.githubusercontent.com/MatuusOS/matuusos-aur-repo/main/x86_64
+    # A list of custom repositories.
+    repos: matuusos=https://raw.githubusercontent.com/MatuusOS/matuusos-aur-repo/main/x86_64
+    # scripts before install packages.
+
+    packages: >
+     phosh
+     mobile-config-firefox
+     
+    scripts: 
+    set -euo pipefail
+
+echo "$0"
+full_path=$(realpath "$0")
+dir_path=${full_path%/*}
+
+readarray -t x86_list <<< "$(find x86_64/ -type f -name PKGBUILD | awk -F / '{print $2}')"
+
+for x in "${x86_list[@]}"
+do
+    cd "${dir_path}"/"${x}"
+    echo "### Making ${dir_path}/${x} ###"
+    makepkg -s
+    find . -mindepth 1 -maxdepth 1 -type d -print0 | xargs -r0 rm -R
+done
